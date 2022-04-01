@@ -31,8 +31,8 @@ function pathPrepare(path, ctx) {
 	for (let i = 0; i < path.length; i++) {
 		let p = path[i];
 		if (typeof p === 'string' && p.charAt(0) === '$') {
-			if (ctx[p] === undefined) {
-				return;
+			if (ctx === undefined || ctx[p] === undefined) {
+				return path;
 			}
 			path[i] = ctx[p];
 		}
@@ -538,8 +538,6 @@ let df = {
 			ctx.funcs[name] = fn;
 		}
 
-
-
 		fn.call(ctx, stg);
 
 		this.set(comp, ctx);
@@ -578,6 +576,10 @@ let df = {
 		len = els.length;
 		for (let i = 0; i < len; i++) {
 			let node = els[i];
+			if (node.dataflow !== undefined && node.dataflow.omit) {
+				continue;
+			}
+
 			let attrs = node.attributes;
 			let len1 = attrs.length;
 			for (let i1 = 0; i1 < len1; i1++) {
@@ -642,7 +644,6 @@ let df = {
 
 	register: function (watcher) {
 		for (let i = 0; i < watcher.args.watchers.length; i++) {
-
 			let w = watcher.args.watchers[i];
 
 			if ((w.flow === 'l' || w.flow === 'p') && watcher.ctx.comp !== undefined) {
@@ -705,7 +706,7 @@ let df = {
 			if (o.flow !== 'p') {
 				o.obj[o.pos] = df.get(o.path, watcher.ctx);
 			} else {
-				o.obj[o.pos] = o.path;
+				o.obj[o.pos] = pathPrepare(o.path, watcher.ctx);
 			}
 		}
 
@@ -844,7 +845,20 @@ df.directive('repeat', function (val) {
 	let repeat = this.el.dataflow.repeat;
 
 	if (repeat.el === undefined) {
-		repeat.el = this.el.removeChild(this.el.firstElementChild);
+		let firstChild = this.el.firstElementChild
+		repeat.el = firstChild.cloneNode(true);
+
+		let nested = this.el.querySelectorAll('*');
+		for (let i = 0; i < nested.length; i++) {
+			let n = nested[i];
+			if (n.dataflow === undefined) {
+				n.dataflow = {};
+			}
+			n.dataflow.omit = true;
+		}
+
+		this.el.removeChild(firstChild);
+
 		repeat.el.classList.remove('df-hide');
 	}
 
@@ -862,8 +876,8 @@ df.directive('repeat', function (val) {
 			ctx[key] = val;
 			ctx.container = true;
 			df.transfer(ctx, self);
-			self.el.insertAdjacentElement('beforeend', clone);
 			df.exec(ctx);
+			self.el.insertAdjacentElement('beforeend', clone);
 		}
 	}
 
@@ -921,4 +935,6 @@ df.directive('if', df.func('if'));
 
 document.addEventListener("DOMContentLoaded", function () {
 	df.set('dataflow.ready', true);
+	// console.log($$watchers);
+	// console.log($$data);
 });
