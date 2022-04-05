@@ -1,3 +1,4 @@
+
 'use strict';
 let $$components = {};
 let $$directives = {};
@@ -5,7 +6,7 @@ let $$data = {};
 let $$watchers = {};
 let $$funcs = {};
 let $$attrCache = {};
-let $$pathCache = {};
+//let $$pathCache = {};
 let watcherIdLast = 0;
 let watchState = { '*': true, '#': false };
 
@@ -48,8 +49,8 @@ function pathPrepare(path, ctx) {
 function flow(watchers) {
 	for (let i = 0; i < watchers.length; i++) {
 		let w = watchers[i];
-		if (typeof w === 'function') {
-			w();
+		if (w.args === undefined && w.path !== undefined) {
+			w.fn(df.get(w.path, w.ctx));
 		} else {
 			let args = df.prepare(w);
 			if (w.fn !== undefined) {
@@ -282,6 +283,14 @@ let df = {
 		$$directives[':' + name] = fn;
 	},
 
+	func: function (name, fn) {
+		if (fn === undefined) {
+			return $$funcs[name];
+		}
+
+		$$funcs[name] = fn;
+	},
+
 	watcher: function (path, watcher) {
 		path = pathPrepare(path, watcher.ctx);
 
@@ -308,7 +317,8 @@ let df = {
 			if (i === len - 1) {
 				if (typeof watcher === 'function') {
 					watcher = {
-						fn: watcher
+						fn: watcher,
+						path: path
 					};
 				}
 				watcher.watcherId = ++watcherIdLast;
@@ -333,136 +343,6 @@ let df = {
 		}
 	},
 
-	unset: function (path) {
-		if (path === undefined) {
-			return;
-		}
-
-		let len = path.length;
-		let tmp = $$data;
-		for (let i = 0; i < len; i++) {
-			if (i < len - 1) {
-				if (tmp[path[i]] === undefined) {
-					return;
-				}
-				tmp = tmp[path[i]];
-			} else {
-				delete tmp[path[i]];
-			}
-		}
-	},
-
-	clean: function (el, ctx) {
-		if (el.dataflow === undefined || el.dataflow.watchers === undefined) {
-			return;
-		}
-
-		let unset = true;
-		if (ctx !== undefined && ctx.data === false) {
-			unset = false;
-		}
-
-		for (let i = 0; i < el.dataflow.watchers.length; i++) {
-			let w = el.dataflow.watchers[i];
-			let len = w.path.length;
-			let tmp = $$watchers;
-			for (let i = 0; i < len; i++) {
-				if (tmp[w.path[i]].len === 1) {
-					delete tmp[w.path[i]];
-					if (unset) {
-						this.unset(w.path.slice(0, i + 1));
-					}
-					break;
-				}
-
-				tmp[w.path[i]].len--;
-
-				if (i === len - 1) {
-					for (let i1 = 0; i1 < tmp[w.path[i]].watchers.length; i1++) {
-						let w1 = tmp[w.path[i]].watchers[i1];
-						if (w.watcherId === w1.watcherId) {
-							tmp[w.path[i]].watchers.splice(i1, 1);
-						}
-					}
-					break;
-				}
-
-				tmp = tmp[w.path[i]].keys;
-			}
-		}
-	},
-
-	remove: function (el, ctx) {
-		let self = this;
-
-		if (typeof el === 'string') {
-			el = document.querySelector(el);
-		}
-
-		if (ctx !== undefined && ctx.container) {
-			self.clean(el, ctx);
-		}
-
-		el.querySelectorAll('*').forEach(function (node) {
-			self.clean(node, ctx);
-			node.parentNode.removeChild(node);
-		});
-	},
-
-	func: function (name, fn) {
-		if (fn === undefined) {
-			return $$funcs[name];
-		}
-
-		$$funcs[name] = fn;
-	},
-
-	set: function (path, val, ctx) {
-		let self = this;
-		path = pathPrepare(path, ctx);
-
-		if (path === undefined) {
-			return;
-		}
-
-		let len = path.length;
-		let tmp = $$data;
-		for (let i = 0; i < len; i++) {
-			if (i < len - 1) {
-				if (tmp[path[i]] === undefined) {
-					tmp[path[i]] = {};
-				}
-				tmp = tmp[path[i]];
-			} else {
-				tmp[path[i]] = val;
-			}
-		}
-
-		self.flow(path, ctx);
-	},
-
-	get: function (path, ctx) {
-		path = pathPrepare(path, ctx);
-
-		if (path === undefined) {
-			return;
-		}
-
-		let len = path.length;
-
-		let tmp = $$data;
-		for (let i = 0; i < len; i++) {
-			if (i < len - 1) {
-				if (tmp[path[i]] === undefined) {
-					return;
-				}
-				tmp = tmp[path[i]];
-			} else {
-				return tmp[path[i]];
-			}
-		}
-	},
-
 	flow: function (path, ctx) {
 		// console.time('flow');
 		if (ctx !== undefined && ctx.flow === 'none') {
@@ -484,13 +364,22 @@ let df = {
 				if (tmp[path[i]] === undefined) {
 					return;
 				}
+
 				if (ctx !== undefined && (ctx.flow === 'before' || ctx.flow === 'all')) {
 					flow(tmp[path[i]].watchers);
 				}
+
+				if (ctx !== undefined && ctx.flow === 'deep') {
+					flowDeep(tmp[path[i]].keys);
+					return;
+				}
+
 				tmp = tmp[path[i]].keys;
+
 			} else {
 				if (tmp[path[i]] !== undefined) {
 					flow(tmp[path[i]].watchers);
+
 					if (ctx !== undefined && (ctx.flow === 'after' || ctx.flow === 'all')) {
 						flowDeep(tmp[path[i]].keys);
 					}
@@ -511,37 +400,33 @@ let df = {
 			comp = stg.comp;
 		}
 
-		let el = {};
+		let ctx = {};
 
-		let ctx = {
-			comp: comp.split('.'),
-			watcher: function (path, fn) {
-				df.watcher(comp + (path ? '.' + path : ''), {
-					el: el,
-					fn: fn
-				});
-			},
+		ctx.comp = comp.split('.');
 
-			set: function (path, val, ctx) {
-				df.set(comp + (path ? '.' + path : ''), val, ctx);
-			},
+		ctx.watcher = function (path, fn) {
+			fn = fn.bind(this);
+			df.watcher(comp + (path ? '.' + path : ''), fn);
+		}
 
-			get: function (path, ctx) {
-				return df.get(comp + (path ? '.' + path : ''), ctx);
-			}
-		};
+		ctx.set = function (path, val, ctx) {
+			df.set(comp + (path ? '.' + path : ''), val, ctx);
+		}
+
+		ctx.get = function (path, ctx) {
+			return df.get(comp + (path ? '.' + path : ''), ctx);
+		}
 
 		ctx.func = function (name, fn) {
-			if (ctx.funcs === undefined) {
-				ctx.funcs = {};
+			if (this.funcs === undefined) {
+				this.funcs = {};
 			}
-			ctx.funcs[name] = fn;
+			this.funcs[name] = fn;
 		}
 
 		fn.call(ctx, stg);
 
 		this.set(comp, ctx);
-		this.set(comp + '.init', true);
 
 		if (stg.el !== undefined) {
 			ctx.el = stg.el;
@@ -549,7 +434,8 @@ let df = {
 			ctx.el = document.querySelector(stg.root || ctx.root);
 		}
 
-		ctx.el.dataflow = el.dataflow;
+		this.set(comp + '.init', true);
+
 		ctx.el.innerHTML = ctx.template;
 
 		this.exec(ctx);
@@ -629,6 +515,132 @@ let df = {
 		}
 	},
 
+	set: function (path, val, ctx) {
+		let self = this;
+		path = pathPrepare(path, ctx);
+
+		if (path === undefined) {
+			return;
+		}
+
+		let len = path.length;
+		let tmp = $$data;
+		for (let i = 0; i < len; i++) {
+			if (i < len - 1) {
+				if (tmp[path[i]] === undefined) {
+					tmp[path[i]] = {};
+				}
+				tmp = tmp[path[i]];
+			} else {
+				tmp[path[i]] = val;
+			}
+		}
+
+		self.flow(path, ctx);
+	},
+
+	get: function (path, ctx) {
+		path = pathPrepare(path, ctx);
+
+		if (path === undefined) {
+			return;
+		}
+
+		let len = path.length;
+
+		let tmp = $$data;
+		for (let i = 0; i < len; i++) {
+			if (i < len - 1) {
+				if (tmp[path[i]] === undefined) {
+					return;
+				}
+				tmp = tmp[path[i]];
+			} else {
+				return tmp[path[i]];
+			}
+		}
+	},
+
+	unset: function (path) {
+		if (path === undefined) {
+			return;
+		}
+
+		let len = path.length;
+		let tmp = $$data;
+		for (let i = 0; i < len; i++) {
+			if (i < len - 1) {
+				if (tmp[path[i]] === undefined) {
+					return;
+				}
+				tmp = tmp[path[i]];
+			} else {
+				delete tmp[path[i]];
+			}
+		}
+	},
+
+	clean: function (el, ctx) {
+		if (typeof el === 'string') {
+			el = document.querySelector(el);
+		}
+
+		if (el.dataflow === undefined || el.dataflow.watchers === undefined) {
+			return;
+		}
+
+		let unset = true;
+		if (ctx !== undefined && ctx.data === false) {
+			unset = false;
+		}
+
+		for (let i = 0; i < el.dataflow.watchers.length; i++) {
+			let w = el.dataflow.watchers[i];
+			let len = w.path.length;
+			let tmp = $$watchers;
+			for (let i = 0; i < len; i++) {
+				if (tmp[w.path[i]].len === 1) {
+					delete tmp[w.path[i]];
+					if (unset) {
+						this.unset(w.path.slice(0, i + 1));
+					}
+					break;
+				}
+
+				tmp[w.path[i]].len--;
+
+				if (i === len - 1) {
+					for (let i1 = 0; i1 < tmp[w.path[i]].watchers.length; i1++) {
+						let w1 = tmp[w.path[i]].watchers[i1];
+						if (w.watcherId === w1.watcherId) {
+							tmp[w.path[i]].watchers.splice(i1, 1);
+						}
+					}
+					break;
+				}
+
+				tmp = tmp[w.path[i]].keys;
+			}
+		}
+	},
+
+	remove: function (el, ctx) {
+		let self = this;
+
+		if (typeof el === 'string') {
+			el = document.querySelector(el);
+		}
+
+		if (ctx !== undefined && ctx.container) {
+			self.clean(el, ctx);
+		}
+
+		el.querySelectorAll('*').forEach(function (node) {
+			self.clean(node, ctx);
+			node.parentNode.removeChild(node);
+		});
+	},
+
 	parse: function (str) {
 		let result = {
 			obj: [],
@@ -661,7 +673,7 @@ let df = {
 		}
 	},
 
-	sys: function (watcher) {
+	prepare: function (watcher) {
 		if (watcher.args === undefined) {
 			return;
 		}
@@ -692,14 +704,6 @@ let df = {
 					s.obj[s.pos] = watcher.ctx[s.name];
 			}
 		}
-	},
-
-	prepare: function (watcher) {
-		this.sys(watcher);
-
-		if (watcher.args === undefined) {
-			return;
-		}
 
 		for (let i = 0; i < watcher.args.watchers.length; i++) {
 			let o = watcher.args.watchers[i];
@@ -726,13 +730,13 @@ let df = {
 		return watcher.args.obj;
 	},
 
-	transfer: function (w1, w2) {
-		if (w2.ctx.comp !== undefined) {
-			w1.comp = w2.ctx.comp;
+	transfer: function (to, from) {
+		if (from.ctx.comp !== undefined) {
+			to.comp = from.ctx.comp;
+			to.funcs = from.ctx.funcs;
+			to.set = from.ctx.set;
+			to.get = from.ctx.get;
 		}
-		w1.funcs = w2.ctx.funcs;
-		w1.set = w2.ctx.set;
-		w1.get = w2.ctx.get;
 	}
 };
 
@@ -933,8 +937,60 @@ df.directive('class', df.func('class'));
 
 df.directive('if', df.func('if'));
 
-document.addEventListener("DOMContentLoaded", function () {
-	df.set('dataflow.ready', true);
-	// console.log($$watchers);
-	// console.log($$data);
+
+// document.addEventListener("DOMContentLoaded", function () {
+// 	df.set('dataflow.ready', true);
+// 	console.log($$watchers);
+// 	console.log($$data);
+// });
+
+
+
+let int = df.parse('1');
+let float = df.parse('1.1');
+let bool = df.parse('true');
+let string = df.parse("'test'"); // quotes
+let arr = df.parse('[1,2,3]');
+let obj = df.parse('{test: true}');
+let func = df.parse('@func()');
+let ma = df.parse('123, true, [1,2,3]'); // multiple arguments
+let w = df.parse('*.test'); // watcher
+let ww = df.parse('*.test.test, #.asd.asd, @func(*.test), 123, true'); // watchers and args
+let ex = df.parse('123, @func(*.test.test), {test: @func([1,2,3])}'); //combine
+let s = df.parse('123, @func(true), {test: [1,2,3]}, $key');
+// console.log('--------------------------------------------');
+// console.log({ int });
+// console.log('--------------------------------------------');
+// console.log({ float });
+// console.log('--------------------------------------------');
+// console.log({ bool });
+// console.log('--------------------------------------------');
+// console.log({ string });
+// console.log('--------------------------------------------');
+// console.log({ arr });
+// console.log('--------------------------------------------');
+// console.log({ obj });
+// console.log('--------------------------------------------');
+// console.log({ func });
+// console.log('--------------------------------------------');
+// console.log({ ma });
+// console.log('--------------------------------------------');
+// console.log({ w });
+// console.log('--------------------------------------------');
+// console.log({ ww });
+// console.log('--------------------------------------------');
+// console.log({ ex });
+// console.log('--------------------------------------------');
+// console.log({ s });
+
+df.func('func', function (val) {
+	return !val;
 });
+let rs = df.prepare({
+	ctx: {
+		$key: 'someKey'
+	},
+	args: s
+});
+// console.log('--------------------------------------------');
+// console.log({ rs });
