@@ -7,13 +7,20 @@ Enjoy!
 # Introduction
 
 Hello, I'm from Ukraine, Kherson city. My country is under attack right now!
+\
 Now it is very difficult, many people ask just for food!
+\
 If you can:
+\
 Patreon: https://www.patreon.com/dataflowjs
+\
 Paypal: mira28y@gmail.com
+\
 BTC: 3Kz8ZUCUHHMecoreazudp57ZhuGb1Z99dr
+\
 ETH (ERC-20): 0xb6bec97a3c764a4e0e92e3c56c6e607c0a3f7e32
-
+\
+\
 Thanks a lot!
 
 ### Functionality
@@ -68,6 +75,7 @@ This is the path in the object separated by a dot, for example path `"user.profi
 #### template
 
 `@` - this is event.
+\
 `: `- this is directive.
 
 ```html
@@ -78,10 +86,14 @@ This is the path in the object separated by a dot, for example path `"user.profi
 ###### watcher
 
 `*` - places the watcher and passes the value to the function or directive.
+\
 `#` - does not place a watcher, but passes a value to a function or directive.
+\
 `&` - does not place a watcher or pass a value, but passes path as an array.
+\
 `~` - specifies the global path. Used in html template inside `df.component(name, fn)` to point to data outside component (global).
-
+\
+\
 Possible combinations watcher:
 
 ```html
@@ -98,13 +110,21 @@ Possible combinations watcher:
 ```
 
 You can specify in the template (at this moment):
+\
 `"123"` - number
+\
 `"1.3"` - number
+\
 `"'string'"` - string
+\
 `"true"` - bool
+\
 `"[1,'2',true]"` - array
+\
 `"{key: value}"` - object
+\
 `"@somefunc()"` - function
+\
 `"*.some.path"` - watcher
 
 ```html
@@ -140,6 +160,7 @@ df.watcher("path", function (value) {
 ```
 
 `value` is the new data that the function will receive at this path.
+\
 Any path can be watched by any number of watchers.
 
 #### df.set (path, value, ctx)
@@ -166,6 +187,7 @@ let val = df.get("path");
 ### df.func(name, fn)
 
 Adds a function that can later be used in the template.
+\
 If the `fn` parameter is not specified, then returns the function by name.
 
 ```javascript
@@ -185,6 +207,7 @@ df.func("myFunc", function (val1, val2) {
 ### df.directive(name, fn)
 
 Adds a directive that can later be used in the template.
+\
 If the `fn` parameter is not specified, then returns the directive by name.
 
 ```javascript
@@ -204,7 +227,9 @@ df.func("myDirective", function (val) {
 #### df.exec(ctx)
 
 Iterates over all elements with `ctx.el.querySelectorAll('*')` parses attributes, registers and immediately executes directives!
+\
 If `ctx.el` is not present, then searches for the selector from `ctx.root` using `document.querySelector(ctx.root)`
+\
 By default, `ctx.el` is not parsed, it is used as a container, but if you need to take into account the container itself, you can set the `container` property to `true`.
 
 ```html
@@ -219,12 +244,15 @@ df.exe({ root: "#someid" }); // {root: 'someid', container: true}
 ```
 
 You can also skip registering and running directives, for example, if you need to do this not now, but in the future. To do this, you can create a `dataflow` object in the element itself with the `omit` property equal to `true`
+\
 Since `querySelectorAll('*)` bypasses the elements in order and the directives are immediately executed, we can take any next element from the NodeList, do something with it and set it to `element.dataflow = {omit: true}` and when before this element reaches the queue, it will be skipped.
 
 ### df.component(name, fn)
 
 Creates a reusable component.
+\
 If `fn` is omitted, the method will return `fn` by `name`.
+\
 Also `name` is used as a prefix for the path within the component, i.e. `name` is used as a unique scope.
 
 ```javascript
@@ -237,7 +265,9 @@ df.component("user", function () {
 ```
 
 From the example above, the watcher path would be `user.name`.
+\
 To change data outside the component, you need to write the full path `df.set('user.name', 'Artem')`.
+\
 The `this` context of the component has its own methods `set`, `get`, `watcher`, `func` which also automatically add the `name` prefix of the component to the path.
 
 ```javascript
@@ -260,7 +290,7 @@ df.component("user", function (stg) {
 ```
 
 In the example above, path is `user.name`.
-
+\
 When inserting a component into a page, it can be passed a `stg` object (settings).
 
 ```javascript
@@ -282,7 +312,8 @@ df.inject({
 });
 ```
 
-Before inserting the component on the page, before `el.innerHTML` there will be a call to df.set('init', true), and after insertion and processing of html, there will be a call to df.ready('ready', true);
+Before inserting the component on the page, before `el.innerHTML` there will be a call to df.set('init', true), and after insertion and processing of html, there will be a call to `df.ready('ready', true)`
+\
 You can create a watcher for this data if needed.
 
 ```javascript
@@ -300,6 +331,7 @@ df.watch("user.init", function (val) {
 ### df.flow(path, ctx)
 
 Starts watchers.
+\
 Called and gets `ctx` in the `df.set(path, val, ctx)` method to trigger update of changes.
 
 ```javascript
@@ -317,6 +349,7 @@ true;
 ```
 
 The default is to start watchers at the end of path, as this is sufficient in most cases. For example if path is `user.profile.name` it will run watchers that watch the `name` property.
+\
 In the ctx object, you can specify the `flow` property, it can be 5 values ​​​​and usually it is specified (if necessary) in `df.set(path, val, ctx)`:
 
 - 'none'
@@ -352,11 +385,17 @@ df.flow("project.name", { flow: "none" });
 ```
 
 If `{flow: 'before'}`:
+\
 That will start watchers all on the current path.
+\
 From the example below, it will launch watchers at the following paths:
+\
 'project'
+\
 'project.other'
+\
 'project.other.speed'
+\
 
 ```javascript
 df.watch("project.other.speed", function (val) {
@@ -367,10 +406,15 @@ df.flow("project.other.speed", { flow: "before" });
 ```
 
 If `{flow: 'after'}`:
+\
 That will start watchers current and all to the right of the current path.
+\
 From the example below, it will launch watchers at the following paths:
+\
 'project.other.info'
+\
 'project.other.info.from'
+\
 
 ```javascript
 df.watch("project.other.info", function (val) {
@@ -381,12 +425,19 @@ df.flow("project.other.speed", { flow: "after" });
 ```
 
 If `{flow: 'all'}`:
+\
 That will start watchers on the left along the path and on all possible paths on the right.
+\
 From the example below, it will launch watchers at the following paths:
+\
 'project'
+\
 'project.other'
+\
 'project.other.info'
+\
 'project.other.info.from'
+\
 'project.other.speed'
 
 ```javascript
@@ -398,13 +449,21 @@ df.flow("project.other.speed", { flow: "all" });
 ```
 
 If `{flow: 'deep'}`:
+\
 That will start watchers in all possible directions.
+\
 From the example below, it will launch watchers at the following paths:
+\
 'project'
+\
 'project.name'
+\
 'project.other'
+\
 'project.other.info'
+\
 'project.other.info.from'
+\
 'project.other.speed'
 
 ```javascript
@@ -426,6 +485,7 @@ df.unset("path");
 #### df.clean(el, ctx)
 
 Removes all watchers that are attached to the element.
+\
 If `el` is a string (selector), then `document.querySelector(el)` will run
 
 ```javascript
@@ -516,6 +576,7 @@ df.register(p); // добавит 2 наблюдателя
 > Often this method is not needed and is used very rarely!
 
 Transfers the required data from the component to a new element.
+\
 When creating a new element inside a component or directive, it needs data to indicate which component it belongs to.
 
 ```javascript
