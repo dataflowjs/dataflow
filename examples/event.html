@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Event</title>
+</head>
+
+<body id="app">
+	<input type="text" @input="@set(&.my.path, $value)">
+	<div :text="*.my.path, 'default text'"></div>
+
+	<hr>
+
+	<select @change="@set(&.another, $value)">
+		<option value="first">first</option>
+		<option value="second">second</option>
+	</select>
+	<div :text="*.another"></div>
+
+	<script src="../dataflow.js"></script>
+	<script>
+		df.set('another', 'waiting choice...');
+		df.exec({ root: '#app' });
+	</script>
+</body>
+
+</html>
