@@ -2,6 +2,8 @@
 
 The idea is to create a simple, fast and powerful JS framework with a quick development start.
 \
+The framework is based on the foundation that everything in our world is data, namely data flow. We can name this data with paths and access it.
+\
 Enjoy!
 
 # Introduction
