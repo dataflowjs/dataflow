@@ -228,7 +228,7 @@ df.func("myDirective", function (val) {
 
 Iterates over all elements with `ctx.el.querySelectorAll('*')` parses attributes, registers and immediately executes directives!
 \
-If `ctx.el` is not present, then searches for the selector from `ctx.root` using `document.querySelector(ctx.root)`
+If `ctx.el` is not present, then searches for the selector from `ctx.root` using `document.querySelector(ctx.root)`.
 \
 By default, `ctx.el` is not parsed, it is used as a container, but if you need to take into account the container itself, you can set the `container` property to `true`.
 
@@ -395,7 +395,6 @@ From the example below, it will launch watchers at the following paths:
 'project.other'
 \
 'project.other.speed'
-\
 
 ```javascript
 df.watch("project.other.speed", function (val) {
@@ -414,7 +413,6 @@ From the example below, it will launch watchers at the following paths:
 'project.other.info'
 \
 'project.other.info.from'
-\
 
 ```javascript
 df.watch("project.other.info", function (val) {
