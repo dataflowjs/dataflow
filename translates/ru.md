@@ -58,6 +58,12 @@ ETH (ERC-20): 0xb6bec97a3c764a4e0e92e3c56c6e607c0a3f7e32
 </html>
 ```
 
+### Examples
+
+https://www.youtube.com/channel/UCb5pcBX86vss29e4MONHgYg
+\
+https://github.com/dataflowjs/dataflow/tree/main/examples
+
 # Документация
 
 ### path
