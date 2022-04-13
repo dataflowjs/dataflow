@@ -435,7 +435,6 @@
 			}
 
 			this.set(comp + '.init', true);
-			console.log(ctx);
 
 			ctx.el.innerHTML = ctx.template;
 
