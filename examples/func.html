@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Func</title>
+</head>
+
+<body id="app">
+	<input type="text" @input="@set(&.name, $value)">
+	<div :text="@upper(*.name)"></div>
+
+	<hr>
+
+	<input type="text" @input="@set(&.lastname, @upper($value)">
+	<div :text="*.lastname"></div>
+
+	<hr>
+
+	<input type="text" @input="@set(&.number, $value)">
+	<div :text="@multiple(*.number, 5)"></div>
+
+	<hr>
+
+	<input type="text" @input="@set(&.number1, $value)">
+	<input type="text" @input="@set(&.number2, $value)">
+	<div :text="@multiple(*.number1, *.number2)"></div>
+
+	<hr>
+
+	<input type="text" @input="@set(&.n1, $value)">
+	<input type="text" @input="@set(&.n2, $value)">
+	<div>(x * y) + (x * y): <span :text="@plus(@multiple(*.n1, *.n2), @multiple(*.n1, *.n2))"></span></div>
+
+	<hr>
+
+
+	<script src="../dataflow.js"></script>
+	<script>
+		df.func('multiple', function (val1, val2) {
+			return parseInt(val1) * parseInt(val2);
+		});
+
+		df.func('plus', function (val1, val2) {
+			return parseInt(val1) + parseInt(val2);
+		});
+
+		df.func('upper', function (val) {
+			if (val === undefined) {
+				return '';
+			}
+			return val.toUpperCase();
+		});
+
+		df.exec({ root: '#app' });
+	</script>
+</body>
+
+</html>
