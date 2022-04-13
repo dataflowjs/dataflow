@@ -80,7 +80,7 @@ This is the path in the object separated by a dot, for example path `"user.profi
 }
 ```
 
-#### template
+### template
 
 `@` - this is event.
 \
@@ -91,7 +91,7 @@ This is the path in the object separated by a dot, for example path `"user.profi
 <div :text="*.some.path'"></div>
 ```
 
-###### watcher
+##### watcher
 
 `*` - places the watcher and passes the value to the function or directive.
 \
@@ -157,7 +157,7 @@ You can also combine arguments separated by commas:
 // etc.
 ```
 
-#### df.watcher (path, watcher)
+### df.watcher (path, watcher)
 
 This is the watcher that will be fired when there are changes to the data in the specified path.
 
@@ -171,7 +171,7 @@ df.watcher("path", function (value) {
 \
 Any path can be watched by any number of watchers.
 
-#### df.set (path, value, ctx)
+### df.set (path, value, ctx)
 
 Creates or modifies data at the specified path and runs `df.flow(path, ctx)` , watchers which in turn modify something on the page or the data itself and pass it on to another path. Another watcher can change the data of other paths and a certain chain of data flow is obtained.
 
@@ -184,7 +184,7 @@ df.set("table.filter.row.set", [1, 2, 3]); // {table: {filter: {row: {set : [1,2
 
 In the `ctx` object, you can specify the `flow` property see `df.flow(path, ctx)`
 
-#### df.get(path, ctx)
+### df.get(path, ctx)
 
 Returns data at the specified path.
 
@@ -232,7 +232,7 @@ df.func("myDirective", function (val) {
 <div :myDirective="*.text"></div>
 ```
 
-#### df.exec(ctx)
+### df.exec(ctx)
 
 Iterates over all elements with `ctx.el.querySelectorAll('*')` parses attributes, registers and immediately executes directives!
 \
@@ -480,7 +480,7 @@ df.watch("project.other.speed.", function (val) {
 df.flow("project.other.speed", { flow: "all" });
 ```
 
-#### df.unset(path)
+### df.unset(path)
 
 Deletes data at the specified path.
 
@@ -488,7 +488,7 @@ Deletes data at the specified path.
 df.unset("path");
 ```
 
-#### df.clean(el, ctx)
+### df.clean(el, ctx)
 
 Removes all watchers that are attached to the element.
 \
@@ -514,7 +514,7 @@ If the `ctx` object has a `data` property equal to `true`, it will also delete a
 </script>
 ```
 
-#### df.remove(el, ctx)
+### df.remove(el, ctx)
 
 Removes the element and all nested elements and calls `df.clean(el, ctx)` for each element
 
@@ -525,7 +525,7 @@ df.remove(el);
 df.remove("selector", { data: true });
 ```
 
-#### df.parse(str)
+### df.parse(str)
 
 > Often this method is not needed and is used very rarely!
 
@@ -543,7 +543,7 @@ Parses a string for later use.
   }
 ```
 
-#### df.prepare(watcher)
+### df.prepare(watcher)
 
 > Often this method is not needed and is used very rarely!
 
@@ -566,7 +566,7 @@ console.log(rs);
 [123, "asdf", false, { test: [1, 2, 3] }, "someKey"];
 ```
 
-#### df.register(watcher)
+### df.register(watcher)
 
 > Often this method is not needed and is used very rarely!
 
@@ -577,7 +577,7 @@ let p = df.parse("*.test.test, *.user.name, #.user.age");
 df.register(p); // добавит 2 наблюдателя
 ```
 
-#### df.transfer(to, from)
+### df.transfer(to, from)
 
 > Often this method is not needed and is used very rarely!
 
@@ -606,6 +606,6 @@ df.component("user", function () {
 });
 ```
 
-### License
+## License
 
 Free to use.

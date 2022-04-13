@@ -80,7 +80,7 @@ https://github.com/dataflowjs/dataflow/tree/main/examples
 }
 ```
 
-#### template
+### template
 
 `@` - это событие.
 \
@@ -91,7 +91,7 @@ https://github.com/dataflowjs/dataflow/tree/main/examples
 <div :text="*.some.path'"></div>
 ```
 
-###### watcher
+##### watcher
 
 `*` - размещает watcher и передает значение в функцию или директиву.
 \
@@ -159,7 +159,7 @@ https://github.com/dataflowjs/dataflow/tree/main/examples
 // etc.
 ```
 
-#### df.watcher (path, watcher)
+### df.watcher (path, watcher)
 
 Это наблюдатель который будет запущен когда произойдут изменения данных по указанному path.
 
@@ -173,7 +173,7 @@ df.watcher("path", function (value) {
 \
 За любым path может наблюдать сколько угодно watcher.
 
-#### df.set (path, value, ctx)
+### df.set (path, value, ctx)
 
 Создает или изменяет данные по указанному path и запускает `df.flow(path, ctx)`, а именно watchers которые в свою очередь изменяют, что-то на странице или сами данные и передают их дальше в другой path. Другой watcher может изменять данные других path и получается некая цепь потока данных.
 
@@ -186,7 +186,7 @@ df.set("table.filter.row.set", [1, 2, 3]); // {table: {filter: {row: {set : [1,2
 
 В объекте `ctx` можно указать свойство `flow` смотрите `df.flow(path, ctx)`
 
-#### df.get(path, ctx)
+### df.get(path, ctx)
 
 Возвращает данные по указаному path.
 
@@ -234,7 +234,7 @@ df.func("myDirective", function (val) {
 <div :myDirective="*.text"></div>
 ```
 
-#### df.exec(ctx)
+### df.exec(ctx)
 
 Обходит все элементы с помощью `ctx.el.querySelectorAll('*')` парсит атрибуты, регистрирует и сразу выплняет директивы!
 \
@@ -483,7 +483,7 @@ df.watch("project.other.speed.", function (val) {
 df.flow("project.other.speed", { flow: "all" });
 ```
 
-#### df.unset(path)
+### df.unset(path)
 
 Удаляет данные по указанному path.
 
@@ -491,7 +491,7 @@ df.flow("project.other.speed", { flow: "all" });
 df.unset("path");
 ```
 
-#### df.clean(el, ctx)
+### df.clean(el, ctx)
 
 Удаляет все watcher которые привязаны к элементу.
 \
@@ -517,7 +517,7 @@ df.clean("selector");
 </script>
 ```
 
-#### df.remove(el, ctx)
+### df.remove(el, ctx)
 
 Удаляет элемент и все вложенные элементы и для каждого элемента вызывает `df.clean(el, ctx)`
 
@@ -528,7 +528,7 @@ df.remove(el);
 df.remove("selector", { data: true });
 ```
 
-#### df.parse(str)
+### df.parse(str)
 
 > Зачастую этот метод не нужен и используется очень редко!
 
@@ -546,7 +546,7 @@ df.remove("selector", { data: true });
   }
 ```
 
-#### df.prepare(watcher)
+### df.prepare(watcher)
 
 > Зачастую этот метод не нужен и используется очень редко!
 
@@ -569,7 +569,7 @@ console.log(rs);
 [123, "asdf", false, { test: [1, 2, 3] }, "someKey"];
 ```
 
-#### df.register(watcher)
+### df.register(watcher)
 
 > Зачастую этот метод не нужен и используется очень редко!
 
@@ -580,7 +580,7 @@ let p = df.parse("*.test.test, *.user.name, #.user.age");
 df.register(p); // добавит 2 наблюдателя
 ```
 
-#### df.transfer(to, from)
+### df.transfer(to, from)
 
 > Зачастую этот метод не нужен и используется очень редко!
 
@@ -609,6 +609,6 @@ df.component("user", function () {
 });
 ```
 
-### License
+## License
 
 Free to use.
