@@ -20,6 +20,17 @@
 	</select>
 	<div :text="*.another"></div>
 
+	<hr>
+
+	<textarea name="" id="" cols="30" rows="10" @input="@set(&.user.name, $value)"></textarea>
+	<div :text="*.user.name"></div>
+
+	<hr>
+
+	<div contenteditable="" @keyup="@set(&.user.lastname, $text)"
+		style="width: 100px; height: 100px; border: 1px solid black;"></div>
+	<div :text="*.user.lastname"></div>
+
 	<script src="../dataflow.js"></script>
 	<script>
 		df.set('another', 'waiting choice...');
