@@ -222,7 +222,7 @@ df.func("myFunc", function (val1, val2) {
 
 ```javascript
 df.func("myDirective", function (val) {
-  // val - is argument of df.parse('*.text');
+  // val - its result of df.parse() and df.prepare();
   // something
   this.el.textContent = val;
   //this.el is element which use directive

@@ -220,7 +220,7 @@ If the `fn` parameter is not specified, then returns the directive by name.
 
 ```javascript
 df.func("myDirective", function (val) {
-  // val - is argument of df.parse('*.text');
+  // val - its result of df.parse() and df.prepare();
   // something
   this.el.textContent = val;
   //this.el is element which use directive
