@@ -8,7 +8,7 @@ Enjoy!
 
 # Introduction
 
-Hello, I'm from Ukraine, Kherson city. My country is under attack right now!
+Hello, I'm from Ukraine. My country is under attack right now!
 \
 Now it is very difficult, many people ask just for food!
 \
