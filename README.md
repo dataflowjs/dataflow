@@ -1,29 +1,10 @@
-# dataflow
+# Introduction
 
 The idea is to create a simple, fast and powerful JS framework with a quick development start.
 \
 The framework is based on the foundation that everything in our world is data, namely data flow. We can name this data with paths and access it.
 \
 Enjoy!
-
-# Introduction
-
-Hello, I'm from Ukraine. My country is under attack right now!
-\
-Now it is very difficult, many people ask just for food!
-\
-If you can:
-\
-Patreon: https://www.patreon.com/dataflowjs
-\
-Paypal: mira28y@gmail.com
-\
-BTC: 3Kz8ZUCUHHMecoreazudp57ZhuGb1Z99dr
-\
-ETH (ERC-20): 0xb6bec97a3c764a4e0e92e3c56c6e607c0a3f7e32
-\
-\
-Thanks a lot!
 
 ### Functionality
 
@@ -609,3 +590,18 @@ df.component("user", function () {
 ## License
 
 Free to use.
+
+## Support
+
+If you can:
+\
+Patreon: https://www.patreon.com/dataflowjs
+\
+Paypal: mira28y@gmail.com
+\
+BTC: 3Kz8ZUCUHHMecoreazudp57ZhuGb1Z99dr
+\
+ETH (ERC-20): 0xb6bec97a3c764a4e0e92e3c56c6e607c0a3f7e32
+\
+\
+Thanks a lot!
