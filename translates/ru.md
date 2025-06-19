@@ -39,8 +39,6 @@
 
 ### Examples
 
-https://www.youtube.com/channel/UCb5pcBX86vss29e4MONHgYg
-\
 https://github.com/dataflowjs/dataflow/tree/main/examples
 
 # Документация
