@@ -433,10 +433,8 @@
 			ctx.comp = comp.split('.');
 
 			ctx.watcher = function (path, fn) {
-				let isFn = typeof path === 'function';
-
 				fn = fn.bind(this);
-				df.watcher(comp + (!isFn ? '.' + path : ''), fn);
+				df.watcher(comp + (path ? '.' + path : ''), fn);
 			}
 
 			ctx.set = function (path, val, ctx) {
@@ -444,7 +442,7 @@
 					path = path.join('.');
 				}
 
-				df.set(comp + (!isFn ? '.' + path : ''), val, ctx);
+				df.set(comp + (path ? '.' + path : ''), val, ctx);
 			}
 
 			ctx.get = function (path, ctx) {
@@ -452,7 +450,7 @@
 					path = path.join('.');
 				}
 
-				return df.get(comp + (!isFn ? '.' + path : ''), ctx);
+				return df.get(comp + (path ? '.' + path : ''), ctx);
 			}
 
 			ctx.push = function (path, val) {
@@ -460,9 +458,9 @@
 					path = path.join('.');
 				}
 
-				let arr = df.get(comp + (!isFn ? '.' + path : ''), ctx);
+				let arr = df.get(comp + (path ? '.' + path : ''), ctx);
 				arr.push(val);
-				df.set(comp + (!isFn ? '.' + path : ''), arr, ctx);
+				df.set(comp + (path ? '.' + path : ''), arr, ctx);
 			}
 
 			ctx.func = function (name, fn) {
@@ -497,7 +495,6 @@
 		},
 
 		exec: function (ctx) {
-			console.log(ctx);
 			if (ctx.el === undefined) {
 				ctx.el = document.querySelector(ctx.root);
 			}
@@ -522,13 +519,13 @@
 
 				this.setup(node);
 
-				// if (node.dataflow.omit) {
-				// 	continue;
-				// }
+				if (node.dataflow.omit) {
+					continue;
+				}
 
-				// if (node.dataflow.once) {
-				// 	node.dataflow.omit = true;
-				// }
+				if (node.dataflow.once) {
+					node.dataflow.omit = true;
+				}
 
 				let attrs = node.attributes;
 				let len1 = attrs.length;
@@ -566,7 +563,6 @@
 
 						case ':':
 							// watcher.args = argsCache(av);
-							console.log(av);
 							watcher.args = this.parse(av);
 
 							this.register(watcher);
@@ -913,6 +909,7 @@
 
 	df.func('setToggle', function (path) {
 		let state = df.get(path);
+		console.log(state);
 		if (!state) {
 			state = true;
 		} else {
@@ -931,7 +928,10 @@
 	});
 
 	df.func('not', function (val) {
-		return !val;
+		if (val) {
+			return true;
+		}
+		return false;
 	});
 
 	df.func('empty', function (val) {
@@ -942,10 +942,12 @@
 	});
 
 	df.func('eq', function (v1, v2) {
+		console.log(v1, v2);
 		return v1 === v2;
 	});
 
 	df.func('ne', function (v1, v2) {
+		console.log(v1, v2, v1 !== v2);
 		return v1 !== v2;
 	});
 
@@ -995,6 +997,7 @@
 	});
 
 	df.func('toggleClassFalse', function (clas, ok) {
+		console.log('toggle', ok);
 		if (!ok) {
 			this.el.classList.add(clas);
 		} else {
@@ -1012,6 +1015,10 @@
 		if (ok) {
 			this.el.classList.add(clas);
 		}
+	});
+
+	df.func('setClass', function (clas) {
+		this.el.classList.add(clas);
 	});
 
 	df.func('class', function (action, class1, val, class2) {
@@ -1073,15 +1080,7 @@
 	df.directive('noop', function () { });
 
 	df.directive('text', function (val, defVal) {
-		if (val === '' || undefined) {
-			this.el.textContent = defVal;
-			return;
-		}
-		this.el.textContent = val;
-	});
-
-	df.directive('text', function (val, defVal) {
-		if (val === '' || undefined) {
+		if (val === '' || val === undefined) {
 			this.el.textContent = defVal;
 			return;
 		}
@@ -1139,6 +1138,9 @@
 			last = this.el.lastElementChild;
 			last.parentNode.removeChild(last);
 		}
+
+		console.log('stg', stg);
+		console.log('stg', val);
 
 		// console.time('range');
 		let directives = this.el.dataflow.directives;
@@ -1248,7 +1250,22 @@
 	df.directive('class.add.true', df.func('addClassTrue'));
 	df.directive('class.toggle.if.true', df.func('toggleClassIfTrue'));
 
+	df.directive('class.set', df.func('setClass'));
+
 	df.directive('if', df.func('if'));
+
+	df.directive('reset', function (val) {
+		if (typeof val === 'boolean') {
+			val = '';
+		}
+		switch (this.el.tagName) {
+			case 'DIV':
+				this.el.textContent = val;
+				break;
+			case 'INPUT':
+				this.el.value = val;
+		}
+	});
 
 	df.directive('context', function (keys) {
 		let directives = this.el.dataflow.directives;
@@ -1315,13 +1332,16 @@
 		context.once = false;
 	});
 
+	df.directive('placeholder', function (value) {
+		this.el.setAttribute('placeholder', value);
+	});
+
 	df.directive('log', function () {
 		console.log(arguments);
 	});
 
 	document.addEventListener("DOMContentLoaded", function () {
-		df.set('pathfinder.ready', true);
-		console.log('pf ready');
+		df.set('dataflow.ready', true);
 		df.w = $$watchers;
 		df.d = $$data;
 		console.log($$watchers);

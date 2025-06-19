@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Basic</title>
+	<style>
+		.df-hide {
+			display: none !important;
+		}
+
+		.section {
+			border: 1px solid black;
+		}
+
+		.table {
+			border: 1px solid green;
+		}
+	</style>
+</head>
+
+<body id="app">
+	<div id="container"></div>
+	<div id="add">
+		<div>
+			<button @click="@add()">add</button>
+		</div>
+	</div>
+
+	<script src="../dataflow.js"></script>
+	<script>
+		let id = 0;
+
+		function getId() {
+			return id++;
+		}
+
+		df.component('section', function (stg) {
+			this.template = `
+				<div class="table">
+					<div id="block-${stg.id}"></div>
+				</div>
+			`;
+
+			this.data = [
+				[
+					{
+						item: 1
+					},
+					{
+						item: 3
+					}
+				]
+			];
+
+			let self = this;
+		});
+
+		df.component('number', function (stg) {
+			this.template = `
+				<div>
+					<div :range=""></div>
+				</div>
+			`;
+		});
+
+		df.func('add', function () {
+			let id = getId();
+			df.inject('section', {
+				root: '#container',
+				comp: 'outer' + id,
+				id: id
+			});
+		});
+
+		df.watcher('dataflow.ready', function () {
+			df.exec({ rood: '#add' });
+		});
+	</script>
+</body>
+
+</html>

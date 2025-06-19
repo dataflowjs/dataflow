@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Tags Selection</title>
+	<style>
+		.df-hide {
+			display: none !important;
+		}
+
+		.fade {
+			position: fixed;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			z-index: 2000;
+		}
+
+		.tag-selection {
+			position: relative;
+			border-bottom: 0.6px solid #6C6C6C;
+			z-index: 2002;
+		}
+
+		.tag-selection .tag-content {
+			display: flex;
+		}
+
+		.tag-selection .tag-buttons {
+			display: flex;
+		}
+
+
+		.tag-selection .tag-buttons img {
+			width: 10px;
+			height: 10px;
+			padding: 15px;
+			cursor: pointer;
+		}
+
+		.tag-selection .tags {
+			width: auto;
+			min-height: auto;
+			height: auto;
+			flex-grow: 1;
+			display: flex;
+			flex-wrap: wrap;
+			box-sizing: border-box;
+			background: #fff;
+			font-family: sans-serif;
+			font-size: 14px;
+			line-height: 20px;
+			color: #556270;
+			padding: 5px 5px 0 5px;
+		}
+
+		.tag-selection .tags .tag {
+			position: relative;
+			background: #556270;
+			display: block;
+			max-width: 100%;
+			word-wrap: break-word;
+			color: #fff;
+			padding: 5px 30px 5px 5px;
+			border-radius: 2px;
+			margin: 0 5px 5px 0;
+		}
+
+		.tag-selection .tags .tag .tag-remove {
+			position: absolute;
+			background: none;
+			display: block;
+			width: 30px;
+			height: 30px;
+			top: 0;
+			right: 0;
+			cursor: pointer;
+			text-decoration: none;
+			text-align: center;
+			color: #ff6b6b;
+			line-height: 30px;
+			padding: 0;
+			border: 0;
+		}
+
+		.tag-selection .tags .tag .tag-remove::before,
+		.tag-selection .tags .tag .tag-remove::after {
+			background: #ff6b6b;
+			position: absolute;
+			display: block;
+			width: 10px;
+			height: 2px;
+			top: 14px;
+			left: 10px;
+			content: '';
+		}
+
+		.tag-selection .tags .tag .tag-remove::before {
+			transform: rotateZ(45deg);
+		}
+
+		.tag-selection .tags .tag .tag-remove::after {
+			transform: rotateZ(-45deg);
+		}
+
+		.tag-selection .tags .tag-form {
+			flex-grow: 1;
+		}
+
+		.tag-selection .tags .tag-form .tag-input {
+			background: transparent;
+			display: block;
+			width: 100%;
+			font-size: 14px;
+			line-height: 20px;
+			padding: 5px;
+			border: 0 none;
+			margin: 0 5px 5px 0;
+			outline: none;
+		}
+
+		.tag-selection .tags-list {
+			list-style: none;
+			position: absolute;
+			top: 100%;
+			width: 100%;
+			max-height: 200px;
+			margin: 0px;
+			padding: 0px;
+			overflow-y: auto;
+			background: #0A0A0A;
+			border: 0.6px solid #545454;
+			color: #ffffff;
+			cursor: pointer;
+			z-index: 2002;
+		}
+
+		.tag-selection .tags-list .tags-list-item {
+			padding: 10px;
+		}
+
+		.tag-selection .tags-list .tags-list-item:hover:not(.active) {
+			background-color: #1E1E1E;
+		}
+
+		.tag-selection .tags-list .tags-list-item.active {
+			background-color: #2196F3;
+			color: #ffffff;
+		}
+
+		.tag-selection .tags-list::-webkit-scrollbar {
+			width: 5px;
+		}
+
+		.tag-selection .tags-list::-webkit-scrollbar-track {
+			background: transparent;
+			border-radius: 5px;
+		}
+
+		.tag-selection .tags-list::-webkit-scrollbar-thumb {
+			background: #545454;
+			border-radius: 5px;
+			-webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+		}
+
+		.tag-selection .tags-list::-webkit-scrollbar-thumb:hover {
+			background: #545454;
+		}
+	</style>
+</head>
+
+<body id="app">
+	<div id="tag-selection" style="width: 450px"></div>
+	<div>test</div>
+	<div class="fade" @click="@set('fade.clicked', true)" :show="*fade.open" :hide="*fade.clicked"></div>
+
+	<script src="../dataflow.js"></script>
+	<script>
+
+		df.set('tags', [
+			'asdf',
+			'df',
+			'df1',
+			'df2',
+			'df3',
+			'df4',
+			'df5',
+			'df6',
+			'df7',
+			'df8',
+			'df9',
+			'df10',
+			'df11',
+			'df12',
+			'df13',
+			'df14',
+			'df15',
+		]);
+
+		df.component('tagSelection', function (stg) {
+			this.template = `
+				<div class="tag-selection">
+					<div class="tag-content">
+						<div class="tags" :range="*data, {last: true}">
+							<span class="tag df-hide">
+								<span class="tag-text" :text="*data.$index"></span>
+								<button class="tag-remove" @click="@removeTag(#data.$index)"></button>
+							</span>
+							<div class="tag-form">
+								<input class="tag-input" maxlength="20" :focus="*input" @input="@addTag($value)" @keypress="@addTag($value)" @focusin="@startFocus()">
+							</div>
+						</div>
+						<div class="tag-buttons">
+							<img src="selection-close.svg" @click="@clear()">	
+							<img src="selection-arrow.svg" @click="@start()">	
+						</div>
+					</div>
+					<ul class="tags-list df-hide" :range="*.tags" :class.toggle.false="'df-hide', *list.show">
+						<li class="tags-list-item" :text="*.tags.$index" :class.toggle.if.true="'active', @eq(*.tags.$index, *currentTag)" @click="@pushTag(*.tags.$index)"></li>
+					</ul>
+				</div>
+			`;
+
+			this.data = [
+				'asf',
+				'fdas'
+			];
+
+			this.show = { list: false };
+
+			let self = this;
+
+			function addTag(value) {
+				console.log(value);
+				let isComma = value.slice(-1) === ',';
+				let isInput = isComma || event.key === "Enter";
+
+				if (!isInput) {
+					return;
+				}
+
+				if (isComma) {
+					value = value.slice(0, -1);
+				}
+
+				if (self.data.indexOf(value) > -1) {
+					this.el.value = '';
+					this.el.focus();
+					return;
+				}
+
+				console.log(this);
+
+				self.push('data', value);
+				self.set('currentTag', value);
+				this.el.value = '';
+				this.el.focus();
+			}
+
+			this.func('addTag', function (value) {
+				addTag.call(this, value);
+				console.log(this);
+			});
+
+			this.func('pushTag', function (value) {
+				let index = self.data.indexOf(value);
+				if (index > -1) {
+					self.data.splice(index, 1);
+					self.set('data', self.data);
+					self.set('currentTag', value);
+					return;
+				}
+
+				self.push('data', value);
+				self.set('currentTag', value);
+			});
+
+			this.func('removeTag', function (value) {
+				let index = self.data.indexOf(value);
+				if (index > -1) {
+					self.data.splice(index, 1);
+					self.set('data', self.data);
+					self.set('currentTag', value);
+				}
+			});
+
+			this.func('start', function () {
+				let state = self.compCtx.get('list.show');
+				state = !state;
+				if (state) {
+					self.compCtx.set('input', state);
+					df.set('fade.open', true);
+				} else {
+					self.compCtx.set('list.show', state);
+				}
+			});
+
+			this.func('startFocus', function () {
+				self.compCtx.set('list.show', true);
+				df.set('fade.open', true);
+			});
+
+			this.func('clear', function () {
+				let data = self.get('data');
+				data.forEach(value => {
+					self.set('currentTag', value);
+				});
+				self.set('data', []);
+			});
+
+			df.watcher('fade.clicked', function (value) {
+				self.compCtx.set('list.show', false);
+			});
+
+		});
+
+		df.watcher('dataflow.ready', function () {
+			df.exec({
+				root: '#app'
+			});
+			df.inject('tagSelection', {
+				root: '#tag-selection',
+				comp: 'tagSelection'
+			});
+		});
+
+		// df.set('tagSelection', ['asd', 'gfd']);
+	</script>
+</body>
+
+</html>

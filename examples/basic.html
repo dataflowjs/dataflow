@@ -9,8 +9,8 @@
 </head>
 
 <body id="app">
-	<button @click="@set(&.binding.path, 'Welcome to dataflow.js!')">Click</button>
-	<div :text="*.binding.path, 'default text'"></div>
+	<button @click="@set(&binding.path, 'Welcome to dataflow.js!')">Click</button>
+	<div :text="*binding.path, 'default text'"></div>
 
 	<script src="../dataflow.js"></script>
 	<script>
