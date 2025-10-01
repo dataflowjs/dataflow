@@ -9,12 +9,12 @@
 </head>
 
 <body id="app">
-	<button @click="@set(&binding.path, 'Welcome to dataflow.js!')">Click</button>
+	<button @click="@set(&binding.path, 'Welcome to pathfinder.js!')">Click</button>
 	<div :text="*binding.path, 'default text'"></div>
 
-	<script src="../dataflow.js"></script>
+	<script src="../pathfinder.js"></script>
 	<script>
-		df.exec({ root: '#app' });
+		pf.exec({ root: '#app' });
 	</script>
 </body>
 

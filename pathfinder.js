@@ -87,9 +87,9 @@
 		for (let i = 0; i < watchers.length; i++) {
 			let w = watchers[i];
 			if (w.args === undefined && w.path !== undefined) {
-				w.fn(df.get(w.path, w));
+				w.fn(pf.get(w.path, w));
 			} else {
-				let args = df.prepare(w);
+				let args = pf.prepare(w);
 				if (w.fn !== undefined) {
 					w.fn.apply(w, args);
 				}
@@ -297,14 +297,14 @@
 	function argsCache(val) {
 		let args = $$attrCache[val];
 		if (args === undefined) {
-			args = df.parse(val);
+			args = pf.parse(val);
 			$$attrCache[val] = args;
 		}
 
 		return args;
 	}
 
-	let df = {
+	let pf = {
 		component: function (name, fn) {
 			if (fn === undefined) {
 				return $$components[name];
@@ -433,8 +433,10 @@
 			ctx.comp = comp.split('.');
 
 			ctx.watcher = function (path, fn) {
+				let isFn = typeof path === 'function';
+
 				fn = fn.bind(this);
-				df.watcher(comp + (path ? '.' + path : ''), fn);
+				pf.watcher(comp + (!isFn ? '.' + path : ''), fn);
 			}
 
 			ctx.set = function (path, val, ctx) {
@@ -442,7 +444,7 @@
 					path = path.join('.');
 				}
 
-				df.set(comp + (path ? '.' + path : ''), val, ctx);
+				pf.set(comp + (!isFn ? '.' + path : ''), val, ctx);
 			}
 
 			ctx.get = function (path, ctx) {
@@ -450,7 +452,7 @@
 					path = path.join('.');
 				}
 
-				return df.get(comp + (path ? '.' + path : ''), ctx);
+				return pf.get(comp + (!isFn ? '.' + path : ''), ctx);
 			}
 
 			ctx.push = function (path, val) {
@@ -458,9 +460,9 @@
 					path = path.join('.');
 				}
 
-				let arr = df.get(comp + (path ? '.' + path : ''), ctx);
+				let arr = pf.get(comp + (!isFn ? '.' + path : ''), ctx);
 				arr.push(val);
-				df.set(comp + (path ? '.' + path : ''), arr, ctx);
+				pf.set(comp + (!isFn ? '.' + path : ''), arr, ctx);
 			}
 
 			ctx.func = function (name, fn) {
@@ -495,6 +497,7 @@
 		},
 
 		exec: function (ctx) {
+			console.log(ctx);
 			if (ctx.el === undefined) {
 				ctx.el = document.querySelector(ctx.root);
 			}
@@ -519,13 +522,13 @@
 
 				this.setup(node);
 
-				if (node.dataflow.omit) {
-					continue;
-				}
+				// if (node.dataflow.omit) {
+				// 	continue;
+				// }
 
-				if (node.dataflow.once) {
-					node.dataflow.omit = true;
-				}
+				// if (node.dataflow.once) {
+				// 	node.dataflow.omit = true;
+				// }
 
 				let attrs = node.attributes;
 				let len1 = attrs.length;
@@ -549,7 +552,7 @@
 
 							let eventName = an.slice(1);
 							let eventFn = function () {
-								df.prepare(watcher);
+								pf.prepare(watcher);
 							};
 
 							node.addEventListener(eventName, eventFn);
@@ -563,6 +566,7 @@
 
 						case ':':
 							// watcher.args = argsCache(av);
+							console.log(av);
 							watcher.args = this.parse(av);
 
 							this.register(watcher);
@@ -787,7 +791,7 @@
 					continue;
 				}
 
-				df.watcher(w.path, watcher);
+				pf.watcher(w.path, watcher);
 			}
 		},
 
@@ -826,7 +830,7 @@
 			for (let i = 0; i < watcher.args.watchers.length; i++) {
 				let o = watcher.args.watchers[i];
 				if (o.flow !== 'p') {
-					o.obj[o.pos] = df.get(o.path, watcher);
+					o.obj[o.pos] = pf.get(o.path, watcher);
 				} else {
 					o.obj[o.pos] = o.path;
 				}
@@ -889,77 +893,71 @@
 		},
 
 		assign: function () {
-			return Object.assign({}, df.get(arrayFrom(arguments)));
+			return Object.assign({}, pf.get(arrayFrom(arguments)));
 		},
 
 		push: function (path, val) {
-			let data = df.get(path);
+			let data = pf.get(path);
 			data.push(val);
-			df.set(path, data);
+			pf.set(path, data);
 		}
 	};
 
-	df.func('set', function () {
+	pf.func('set', function () {
 		let args = arrayFrom(arguments);
 		if (args.length === 2) {
 			args.push(this);
 		}
-		df.set.apply(df, args);
+		pf.set.apply(df, args);
 	});
 
-	df.func('setToggle', function (path) {
-		let state = df.get(path);
-		console.log(state);
+	pf.func('setToggle', function (path) {
+		let state = pf.get(path);
 		if (!state) {
 			state = true;
 		} else {
 			state = false;
 		}
 
-		df.set(path, state);
+		pf.set(path, state);
 	});
 
-	df.func('stringify', function (val) {
+	pf.func('stringify', function (val) {
 		return JSON.stringify(val);
 	});
 
-	df.func('concat', function () {
+	pf.func('concat', function () {
 		return arrayFrom(arguments).join('');
 	});
 
-	df.func('not', function (val) {
-		if (val) {
-			return true;
-		}
-		return false;
+	pf.func('not', function (val) {
+		return !val;
 	});
 
-	df.func('empty', function (val) {
+	pf.func('empty', function (val) {
 		if (val) {
 			return false;
 		}
 		return true;
 	});
 
-	df.func('eq', function (v1, v2) {
-		console.log(v1, v2);
+	pf.func('eq', function (v1, v2) {
 		return v1 === v2;
 	});
 
-	df.func('ne', function (v1, v2) {
-		console.log(v1, v2, v1 !== v2);
+	pf.func('ne', function (v1, v2) {
 		return v1 !== v2;
 	});
 
-	df.func('int', function (val) {
+	pf.func('int', function (val) {
 		return parseInt(val);
 	});
 
-	df.func('float', function (val) {
+	pf.func('float', function (val) {
 		return parseFloat(val);
 	});
 
-	df.func('or', function () {
+	pf.func('or', function () {
 		let args = arrayFrom(arguments);
 		if (args[0]) {
 			return args[1];
@@ -967,7 +965,7 @@
 		return args[2];
 	});
 
-	df.func('if', function () {
+	pf.func('if', function () {
 		let args = arrayFrom(arguments);
 		let state = args.shift();
 		if (state) {
@@ -976,11 +974,11 @@
 				return this.ctx.funcs[fn].apply(this, args);
 			}
 
-			return df.func(fn).apply(this, args);
+			return pf.func(fn).apply(this, args);
 		}
 	});
 
-	df.func('ifr', function () {
+	pf.func('ifr', function () {
 		let args = arrayFrom(arguments);
 		let state = args.shift();
 		if (state) {
@@ -988,7 +986,7 @@
 		}
 	});
 
-	df.func('toggleClassTrue', function (clas, ok) {
+	pf.func('toggleClassTrue', function (clas, ok) {
 		if (ok) {
 			this.el.classList.add(clas);
 		} else {
@@ -996,8 +994,7 @@
 		}
 	});
 
-	df.func('toggleClassFalse', function (clas, ok) {
-		console.log('toggle', ok);
+	pf.func('toggleClassFalse', function (clas, ok) {
 		if (!ok) {
 			this.el.classList.add(clas);
 		} else {
@@ -1005,23 +1002,19 @@
 		}
 	});
 
-	df.func('removeClassTrue', function (clas, ok) {
+	pf.func('removeClassTrue', function (clas, ok) {
 		if (ok) {
 			this.el.classList.remove(clas);
 		}
 	});
 
-	df.func('addClassTrue', function (clas, ok) {
+	pf.func('addClassTrue', function (clas, ok) {
 		if (ok) {
 			this.el.classList.add(clas);
 		}
 	});
 
-	df.func('setClass', function (clas) {
-		this.el.classList.add(clas);
-	});
-
-	df.func('class', function (action, class1, val, class2) {
+	pf.func('class', function (action, class1, val, class2) {
 		switch (action) {
 			case 'toggle':
 				if (val) {
@@ -1043,13 +1036,13 @@
 		}
 	});
 
-	df.func('classTrue', function (clas, ok) {
+	pf.func('classTrue', function (clas, ok) {
 		if (ok) {
 			this.el.classList.add(clas);
 		}
 	});
 
-	df.func('toggleClassIfTrue', function (clas, ok) {
+	pf.func('toggleClassIfTrue', function (clas, ok) {
 		if (ok) {
 			if (this.el.classList.contains(clas)) {
 				this.el.classList.remove(clas);
@@ -1059,70 +1052,82 @@
 		}
 	});
 
-	df.func('classFalse', function () {
+	pf.func('classFalse', function () {
 		let args = arrayFrom(arguments);
 		args[0] = !args[0];
-		df.func('classTrue').apply(this, args);
+		pf.func('classTrue').apply(this, args);
 	});
 
-	df.func('show', function (ok) {
+	pf.func('show', function (ok) {
 		if (ok) {
 			this.el.classList.remove('df-hide');
-		}
-	});
-
-	df.func('hide', function (ok) {
-		if (ok) {
+		} else {
 			this.el.classList.add('df-hide');
 		}
 	});
 
-	df.directive('noop', function () { });
+	pf.func('hide', function (ok) {
+		if (ok) {
+			this.el.classList.add('df-hide');
+		} else {
+			this.el.classList.remove('df-hide');
+		}
+	});
 
-	df.directive('text', function (val, defVal) {
-		if (val === '' || val === undefined) {
+	pf.directive('noop', function () { });
+
+	pf.directive('text', function (val, defVal) {
+		if (val === '' || undefined) {
 			this.el.textContent = defVal;
 			return;
 		}
 		this.el.textContent = val;
 	});
 
-	df.directive('value', function (val, defVal) {
+	pf.directive('text', function (val, defVal) {
+		if (val === '' || undefined) {
+			this.el.textContent = defVal;
+			return;
+		}
+		this.el.textContent = val;
+	});
+
+	pf.directive('value', function (val, defVal) {
 		this.el.value = val || defVal;
 	});
 
-	df.directive('focus', function (ok) {
+	pf.directive('focus', function (ok) {
 		if (ok) {
 			this.el.focus();
 		}
 	});
 
-	df.directive('attr', function (access, name, value) {
+	pf.directive('attr', function (access, name, value) {
 		if (access) {
 			this.el.setAttribute(name, value);
 		}
 	});
 
-	df.directive('rowspan', function (access, value) {
+	pf.directive('rowspan', function (access, value) {
 		if (access) {
 			this.el.setAttribute('rowspan', value);
 			return;
 		}
 
-		df.remove(this.el, { container: true, deep: true });
+		pf.remove(this.el, { container: true, deep: true });
 		this.el.parentElement.removeChild(this.el);
 	});
 
-	df.directive('component', function (name, params) {
+	pf.directive('component', function (name, params) {
 		if (params === undefined) {
 			params = {};
 		}
 		params.el = this.el;
-		df.transfer(this, params);
-		df.inject(name, params);
+		pf.transfer(this, params);
+		pf.inject(name, params);
 	});
 
-	df.directive('range', function (val, stg) {
+	pf.directive('range', function (val, stg) {
 		if (stg === undefined) {
 			stg = {};
 		}
@@ -1139,9 +1144,6 @@
 			last.parentNode.removeChild(last);
 		}
 
-		console.log('stg', stg);
-		console.log('stg', val);
-
 		// console.time('range');
 		let directives = this.el.dataflow.directives;
 		if (directives.range === undefined) {
@@ -1157,7 +1159,7 @@
 			let nodes = this.el.querySelectorAll('*');
 			for (let i = 0; i < nodes.length; i++) {
 				let node = nodes[i];
-				df.setup(node);
+				pf.setup(node);
 				node.dataflow.omit = true;
 			}
 
@@ -1176,12 +1178,12 @@
 			keyName = stg.key;
 		}
 
-		df.remove(this.el, { data: dataRemove, deep: true });
+		pf.remove(this.el, { data: dataRemove, deep: true });
 
 		if (range.fn === undefined) {
 			range.fn = function (self, key, val) {
 				let clone = range.el.cloneNode(true);
-				df.setup(clone);
+				pf.setup(clone);
 
 				let ctx = {};
 				ctx.el = clone;
@@ -1191,7 +1193,7 @@
 				let nodes = ctx.el.querySelectorAll('*');
 				for (let i = 0; i < nodes.length; i++) {
 					let node = nodes[i];
-					df.setup(node);
+					pf.setup(node);
 
 					for (let k in self.el.dataflow.context) {
 						node.dataflow.context[k] = self.el.dataflow.context[k];
@@ -1200,8 +1202,8 @@
 
 				ctx.container = true;
 
-				df.transfer(self, ctx);
-				df.exec(ctx);
+				pf.transfer(self, ctx);
+				pf.exec(ctx);
 				self.el.insertAdjacentElement('beforeend', clone);
 
 
@@ -1229,13 +1231,13 @@
 		// console.timeEnd('range');
 	});
 
-	df.directive('hide', df.func('hide'));
-	df.directive('show', df.func('show'));
+	pf.directive('hide', pf.func('hide'));
+	pf.directive('show', pf.func('show'));
 
-	df.directive('class', df.func('class'));
-	df.directive('class.true', df.func('classTrue'));
-	df.directive('class.false', df.func('classFalse'));
-	df.directive('class.else', function (state, class1, class2) {
+	pf.directive('class', pf.func('class'));
+	pf.directive('class.true', pf.func('classTrue'));
+	pf.directive('class.false', pf.func('classFalse'));
+	pf.directive('class.else', function (state, class1, class2) {
 		if (state) {
 			this.el.classList.remove(class2);
 			this.el.classList.add(class1);
@@ -1244,30 +1246,15 @@
 			this.el.classList.add(class2);
 		}
 	});
-	df.directive('class.toggle.true', df.func('toggleClassTrue'));
-	df.directive('class.toggle.false', df.func('toggleClassFalse'));
-	df.directive('class.remove.true', df.func('removeClassTrue'));
-	df.directive('class.add.true', df.func('addClassTrue'));
-	df.directive('class.toggle.if.true', df.func('toggleClassIfTrue'));
+	pf.directive('class.toggle.true', pf.func('toggleClassTrue'));
+	pf.directive('class.toggle.false', pf.func('toggleClassFalse'));
+	pf.directive('class.remove.true', pf.func('removeClassTrue'));
+	pf.directive('class.add.true', pf.func('addClassTrue'));
+	pf.directive('class.toggle.if.true', pf.func('toggleClassIfTrue'));
 
-	df.directive('class.set', df.func('setClass'));
+	pf.directive('if', pf.func('if'));
 
-	df.directive('if', df.func('if'));
-
-	df.directive('reset', function (val) {
-		if (typeof val === 'boolean') {
-			val = '';
-		}
-		switch (this.el.tagName) {
-			case 'DIV':
-				this.el.textContent = val;
-				break;
-			case 'INPUT':
-				this.el.value = val;
-		}
-	});
-
-	df.directive('context', function (keys) {
+	pf.directive('context', function (keys) {
 		let directives = this.el.dataflow.directives;
 		if (directives.context === undefined) {
 			directives.context = {};
@@ -1319,35 +1306,32 @@
 			}
 		}
 
-		df.clean(this.el, {
+		pf.clean(this.el, {
 			container: true,
 			deep: true
 		});
 
-		let ctx = df.transfer(this, { el: this.el });
+		let ctx = pf.transfer(this, { el: this.el });
 		ctx.container = true;
 
-		df.exec(ctx);
+		pf.exec(ctx);
 
 		context.once = false;
 	});
 
-	df.directive('placeholder', function (value) {
-		this.el.setAttribute('placeholder', value);
-	});
-
-	df.directive('log', function () {
+	pf.directive('log', function () {
 		console.log(arguments);
 	});
 
 	document.addEventListener("DOMContentLoaded", function () {
-		df.set('dataflow.ready', true);
-		df.w = $$watchers;
-		df.d = $$data;
+		pf.set('pathfinder.ready', true);
+		console.log('pf ready');
+		pf.w = $$watchers;
+		pf.d = $$data;
 		console.log($$watchers);
 		console.log($$data);
 	});
 
-	this.df = df;
+	this.pf = pf;
 
 }.call(this));

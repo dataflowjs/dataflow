@@ -29,40 +29,40 @@
 	</div>
 
 
-	<script src="../dataflow.js"></script>
+	<script src="../pathfinder.js"></script>
 	<script>
-		df.exec({ root: '#app' });
+		pf.exec({ root: '#app' });
 
-		df.set('data', []);
+		pf.set('data', []);
 
-		df.func('add', function (val) {
-			let edit = df.get('edit');
+		pf.func('add', function (val) {
+			let edit = pf.get('edit');
 			if (edit) {
-				let data = df.get('data');
+				let data = pf.get('data');
 				for (let i = 0; i < data.length; i++) {
 					if (data[i] == edit) {
 						data[i] = val;
-						df.set('data', data);
+						pf.set('data', data);
 						break;
 					}
 				}
-				df.set('edit', '');
+				pf.set('edit', '');
 				return;
 			}
 
-			df.push('data', val);
-			df.set('edit', '');
+			pf.push('data', val);
+			pf.set('edit', '');
 		});
 
-		df.func('edit', function (i) {
-			let val = df.get('data')[i];
-			df.set("edit", val);
+		pf.func('edit', function (i) {
+			let val = pf.get('data')[i];
+			pf.set("edit", val);
 		});
 
-		df.func('remove', function (i) {
-			let data = df.get('data');
+		pf.func('remove', function (i) {
+			let data = pf.get('data');
 			data.splice(i, 1);
-			df.set('data', data);
+			pf.set('data', data);
 		});
 	</script>
 </body>

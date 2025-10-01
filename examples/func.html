@@ -37,24 +37,24 @@
 	<hr>
 
 
-	<script src="../dataflow.js"></script>
+	<script src="../pathfinder.js"></script>
 	<script>
-		df.func('multiple', function (val1, val2) {
+		pf.func('multiple', function (val1, val2) {
 			return parseInt(val1) * parseInt(val2);
 		});
 
-		df.func('plus', function (val1, val2) {
+		pf.func('plus', function (val1, val2) {
 			return parseInt(val1) + parseInt(val2);
 		});
 
-		df.func('upper', function (val) {
+		pf.func('upper', function (val) {
 			if (val === undefined) {
 				return '';
 			}
 			return val.toUpperCase();
 		});
 
-		df.exec({ root: '#app' });
+		pf.exec({ root: '#app' });
 	</script>
 </body>
 

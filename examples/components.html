@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Basic</title>
+	<title>Components</title>
 	<style>
 		.df-hide {
 			display: none !important;
@@ -29,7 +29,7 @@
 		</div>
 	</div>
 
-	<script src="../dataflow.js"></script>
+	<script src="../pathfinder.js"></script>
 	<script>
 		let id = 0;
 
@@ -37,7 +37,7 @@
 			return id++;
 		}
 
-		df.component('section', function (stg) {
+		pf.component('section', function (stg) {
 			this.template = `
 				<div class="table">
 					<div id="block-${stg.id}"></div>
@@ -58,7 +58,7 @@
 			let self = this;
 		});
 
-		df.component('number', function (stg) {
+		pf.component('number', function (stg) {
 			this.template = `
 				<div>
 					<div :range=""></div>
@@ -66,17 +66,17 @@
 			`;
 		});
 
-		df.func('add', function () {
+		pf.func('add', function () {
 			let id = getId();
-			df.inject('section', {
+			pf.inject('section', {
 				root: '#container',
 				comp: 'outer' + id,
 				id: id
 			});
 		});
 
-		df.watcher('dataflow.ready', function () {
-			df.exec({ rood: '#add' });
+		pf.watcher('pathfinder.ready', function () {
+			pf.exec({ rood: '#add' });
 		});
 	</script>
 </body>
