@@ -1060,17 +1060,17 @@
 
 	pf.func('show', function (ok) {
 		if (ok) {
-			this.el.classList.remove('df-hide');
+			this.el.classList.remove('pf-hide');
 		} else {
-			this.el.classList.add('df-hide');
+			this.el.classList.add('pf-hide');
 		}
 	});
 
 	pf.func('hide', function (ok) {
 		if (ok) {
-			this.el.classList.add('df-hide');
+			this.el.classList.add('pf-hide');
 		} else {
-			this.el.classList.remove('df-hide');
+			this.el.classList.remove('pf-hide');
 		}
 	});
 
@@ -1165,7 +1165,7 @@
 
 			this.el.removeChild(firstChild);
 
-			range.el.classList.remove('df-hide');
+			range.el.classList.remove('pf-hide');
 		}
 
 		let dataRemove = false;
