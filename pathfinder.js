@@ -497,7 +497,6 @@
 		},
 
 		exec: function (ctx) {
-			console.log(ctx);
 			if (ctx.el === undefined) {
 				ctx.el = document.querySelector(ctx.root);
 			}
@@ -566,7 +565,6 @@
 
 						case ':':
 							// watcher.args = argsCache(av);
-							console.log(av);
 							watcher.args = this.parse(av);
 
 							this.register(watcher);
@@ -908,7 +906,7 @@
 		if (args.length === 2) {
 			args.push(this);
 		}
-		pf.set.apply(df, args);
+		pf.set.apply(pf, args);
 	});
 
 	pf.func('setToggle', function (path) {
@@ -1076,16 +1074,9 @@
 
 	pf.directive('noop', function () { });
 
-	pf.directive('text', function (val, defVal) {
-		if (val === '' || undefined) {
-			this.el.textContent = defVal;
-			return;
-		}
-		this.el.textContent = val;
-	});
 
 	pf.directive('text', function (val, defVal) {
-		if (val === '' || undefined) {
+		if (val === '' || val === undefined) {
 			this.el.textContent = defVal;
 			return;
 		}
@@ -1233,6 +1224,9 @@
 
 	pf.directive('hide', pf.func('hide'));
 	pf.directive('show', pf.func('show'));
+	pf.directive('show.equal', function (val1, val2) {
+		pf.func('show').call(this, val1 === val2);
+	});
 
 	pf.directive('class', pf.func('class'));
 	pf.directive('class.true', pf.func('classTrue'));
