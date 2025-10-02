@@ -588,8 +588,11 @@ pf.component("user", function () {
 ### If you can
 
 USDT (TRC-20) TPjQKwmc3vBUhHuLiEhTCnr5gvJTZMvwc3
+
 USDT (BEP-20) 0xCc06c2A652aB8D2F0B369472087AcF7152F11720
+
 ETH (ERC-20) 0x848C4397A99323e65750F804F92A5ABF4e865Fb6
+
 BTC (BTC) bc1q0xsfx74jlt307a77m6y9ckwqj8s8jdrj3vht7v
 
 Thank you!
