@@ -583,7 +583,9 @@ pf.component("user", function () {
 });
 ```
 
-### Free to use
+### License
+
+Free to use
 
 ### If you can
 
